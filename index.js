@@ -1,7 +1,7 @@
 const fetch = require("./fetch");
 
 if (!process.env.GITHUB_TOKEN) {
-  console.error("🔴 no GITHUB_TOKEN found. pass `GITHUB_TOKEN` as env");
+  console.error("🔴 No GITHUB_TOKEN found. pass `GITHUB_TOKEN` as env");
   process.exitCode = 1;
   return;
 }
@@ -9,14 +9,14 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 if (!process.env.GITHUB_REPOSITORY) {
   console.error(
-    "🔴 no GITHUB_REPOSITORY found. pass `GITHUB_REPOSITORY` as env"
+    "🔴 No GITHUB_REPOSITORY found. pass `GITHUB_REPOSITORY` as env"
   );
   process.exitCode = 1;
   return;
 }
 
 if (!process.env.INPUT_REPO) {
-  console.warn("💬  no `repo` name given. fall-ing back to this repo");
+  console.warn("💬  No `repo` name given. fall-ing back to this repo");
 }
 
 const [owner, repo] = (
@@ -24,13 +24,13 @@ const [owner, repo] = (
 ).split("/");
 
 if (!owner || !repo) {
-  console.error("☠️  either owner or repo name is empty. exiting...");
+  console.error("☠️  Either owner or repo name is empty. exiting...");
   process.exitCode = 1;
   return;
 }
 
 if (!process.env.INPUT_KEEP_LATEST) {
-  console.error("✋🏼  no `keep_latest` given. exiting...");
+  console.error("✋🏼  No `keep_latest` given. exiting...");
   process.exitCode = 1;
   return;
 }
@@ -38,13 +38,13 @@ if (!process.env.INPUT_KEEP_LATEST) {
 const keepLatest = Number(process.env.INPUT_KEEP_LATEST);
 
 if (Number.isNaN(keepLatest) || keepLatest < 0) {
-  console.error("🤮  invalid `keep_latest` given. exiting...");
+  console.error("🤮  Invalid `keep_latest` given. exiting...");
   process.exitCode = 1;
   return;
 }
 
 if (keepLatest === 0) {
-  console.error("🌶  given `keep_latest` is 0, this will wipe out all releases");
+  console.error("🌶  Given `keep_latest` is 0, this will wipe out all releases");
 }
 
 const dryRun = process.env.INPUT_DRY_RUN !== "false";
@@ -56,19 +56,19 @@ if (dryRun) {
 const shouldDeleteTags = process.env.INPUT_DELETE_TAGS === "true";
 
 if (shouldDeleteTags) {
-  console.log("🔖  corresponding tags also will be deleted");
+  console.log("🔖  Corresponding git tags also will be deleted");
 }
 
 const preReleaseOnly = process.env.INPUT_PRE_RELEASE_ONLY !== "false";
 if (shouldDeleteTags) {
-  console.log("🔖  only pre-releases will be deleted");
+  console.log("🔖  Only pre-releases will be deleted");
 }
 
 const olderThanDays = Number(process.env.INPUT_OLDER_THAN);
 
 let deletePattern = process.env.INPUT_DELETE_TAG_PATTERN || "";
 if (deletePattern) {
-  console.log(`releases containing ${deletePattern} will be targeted`);
+  console.log(`releases matching regex '${deletePattern}' will be targeted`);
 }
 const commonOpts = {
   host: "api.github.com",
@@ -149,20 +149,20 @@ async function deleteOlderReleases(keepLatest) {
   }
 
   if (releaseIdsAndTags.length === 0) {
-    console.error(`😕  no older releases found. exiting...`);
+    console.error(`😕  No older releases found. exiting...`);
     return;
   }
-  console.log(`🍻  found ${releaseIdsAndTags.length} older release(s)`);
+  console.log(`🍻  Found ${releaseIdsAndTags.length} older release(s) to delete:`);
 
   let hasError = false;
   for (let i = 0; i < releaseIdsAndTags.length; i++) {
     const { id: releaseId, tagName } = releaseIdsAndTags[i];
 
     if (dryRun) {
-      console.log(`(DRY-RUN) Would delete ${tagName} with id ${releaseId}`);
+      console.log(`- (DRY-RUN) Would delete ${tagName} with id ${releaseId}`);
     } else {
       try {
-        console.log(`starting to delete ${tagName} with id ${releaseId}`);
+        console.log(`- Deleting ${tagName} with id ${releaseId}`);
 
         const _ = await fetch({
           ...commonOpts,
@@ -179,7 +179,7 @@ async function deleteOlderReleases(keepLatest) {
             });
           } catch (error) {
             console.error(
-              `🌶  failed to delete tag "${tagName}"  <- ${error.message}`
+              `🌶  Failed to delete tag "${tagName}"  <- ${error.message}`
             );
             hasError = true;
             break;
@@ -187,7 +187,7 @@ async function deleteOlderReleases(keepLatest) {
         }
       } catch (error) {
         console.error(
-          `🌶  failed to delete release with id "${releaseId}"  <- ${error.message}`
+          `🌶  Failed to delete release with id "${releaseId}"  <- ${error.message}`
         );
         hasError = true;
         break;
