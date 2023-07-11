@@ -59,6 +59,11 @@ if (shouldDeleteTags) {
   console.log("🔖  corresponding tags also will be deleted");
 }
 
+const preReleaseOnly = process.env.INPUT_PRE_RELEASE_ONLY !== "false";
+if (shouldDeleteTags) {
+  console.log("🔖  only pre-releases will be deleted");
+}
+
 let deletePattern = process.env.INPUT_DELETE_TAG_PATTERN || "";
 if (deletePattern) {
   console.log(`releases containing ${deletePattern} will be targeted`);
@@ -76,7 +81,16 @@ const commonOpts = {
 
 function filterReleases(data){
   let matchedReleases = data.filter(
-    ({ draft, tag_name }) => !draft && tag_name.indexOf(deletePattern) !== -1
+    ({ id, draft, prerelease, tag_name, published_at }) => {
+        if (tag_name.match(deletePattern) == null)
+            return false;
+        if (preReleaseOnly && !prerelease){
+            console.log(`- Skipping ${tag_name} (prerelease=${prerelease}) with id ${id} published ${published_at}`);
+            return false;
+        }
+
+        return !draft;
+    }
   );
   return matchedReleases;
 }
@@ -106,13 +120,14 @@ async function deleteOlderReleases(keepLatest) {
 
     releaseIdsAndTags = activeMatchedReleases
       .sort((a,b)=> Date.parse(b.published_at) - Date.parse(a.published_at))
-      .map(({ id, tag_name: tagName }) => ({ id, tagName }));
+      .map(({ id, tag_name: tagName, prerelease, published_at: publishedAt }) =>
+        ({ id, tagName, prerelease, publishedAt }));
 
     const keepers = releaseIdsAndTags.slice(0,keepLatest);
     console.log(`Keeping ${keepers.length} release(s):`);
     for (let i = 0; i < keepers.length; i++) {
-      const { id: releaseId, tagName } = keepers[i];
-      console.log(`-  Keeping ${tagName} with id ${releaseId}`);
+      const { id: releaseId, tagName, publishedAt } = keepers[i];
+      console.log(`- Keeping ${tagName} with id ${releaseId} published ${publishedAt}`);
     }
 
     releaseIdsAndTags = releaseIdsAndTags.slice(keepLatest);

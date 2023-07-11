@@ -16,6 +16,9 @@ inputs:
   dry_run:
     description: dry run; don't delete anything
     required: false
+  pre_release_only:
+    description: delete pre-releases only
+    required: false
   delete_tags:
     description: whether to delete tags associated to older releases or not
     required: false
