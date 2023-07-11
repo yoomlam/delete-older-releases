@@ -10,6 +10,9 @@ inputs:
   keep_latest:
     description: how many latest releases to keep
     required: true
+  older_than:
+    description: delete releases published older than this many days ago
+    required: true
   repo:
     description: repo name in the form of <owner>/<repoName>
     required: false
