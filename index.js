@@ -106,8 +106,16 @@ async function deleteOlderReleases(keepLatest) {
 
     releaseIdsAndTags = activeMatchedReleases
       .sort((a,b)=> Date.parse(b.published_at) - Date.parse(a.published_at))
-      .map(({ id, tag_name: tagName }) => ({ id, tagName }))
-      .slice(keepLatest);
+      .map(({ id, tag_name: tagName }) => ({ id, tagName }));
+
+    const keepers = releaseIdsAndTags.slice(0,keepLatest);
+    console.log(`Keeping ${keepers.length} release(s):`);
+    for (let i = 0; i < keepers.length; i++) {
+      const { id: releaseId, tagName } = keepers[i];
+      console.log(`-  Keeping ${tagName} with id ${releaseId}`);
+    }
+
+    releaseIdsAndTags = releaseIdsAndTags.slice(keepLatest);
 
   } catch (error) {
     console.error(`🌶  failed to get list of releases <- ${error.message}`);
@@ -127,7 +135,7 @@ async function deleteOlderReleases(keepLatest) {
     const { id: releaseId, tagName } = releaseIdsAndTags[i];
 
     if (dryRun) {
-      console.log(`DRY-RUN: would delete ${tagName} with id ${releaseId}`);
+      console.log(`(DRY-RUN) Would delete ${tagName} with id ${releaseId}`);
     } else {
       try {
         console.log(`starting to delete ${tagName} with id ${releaseId}`);
